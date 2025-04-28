@@ -83,6 +83,7 @@ public struct MatchedGeometryPresentationLinkTransition: PresentationLinkTransit
         public var minimumScaleFactor: CGFloat
         public var initialOpacity: CGFloat
         public var preferredPresentationShadow: PresentationLinkTransition.Shadow
+        public var sourceViewProvider: (() -> UIView?)?
 
         public init(
             edges: Edge.Set = .all,
@@ -92,7 +93,8 @@ public struct MatchedGeometryPresentationLinkTransition: PresentationLinkTransit
             prefersZoomEffect: Bool = false,
             minimumScaleFactor: CGFloat = 0.5,
             initialOpacity: CGFloat = 1,
-            preferredPresentationShadow: PresentationLinkTransition.Shadow = .minimal
+            preferredPresentationShadow: PresentationLinkTransition.Shadow = .minimal,
+            sourceViewProvider: (() -> UIView?)? = nil
         ) {
             self.edges = edges
             self.preferredFromCornerRadius = preferredFromCornerRadius
@@ -102,6 +104,7 @@ public struct MatchedGeometryPresentationLinkTransition: PresentationLinkTransit
             self.minimumScaleFactor = minimumScaleFactor
             self.initialOpacity = initialOpacity
             self.preferredPresentationShadow = preferredPresentationShadow
+            self.sourceViewProvider = sourceViewProvider
         }
     }
     public var options: Options
@@ -149,7 +152,7 @@ public struct MatchedGeometryPresentationLinkTransition: PresentationLinkTransit
         context: Context
     ) -> (any UIViewControllerAnimatedTransitioning)? {
         let transition = MatchedGeometryPresentationControllerTransition(
-            sourceView: context.sourceView,
+            sourceView: options.sourceViewProvider?() ?? context.sourceView,
             prefersScaleEffect: options.prefersScaleEffect,
             prefersZoomEffect: options.prefersZoomEffect,
             preferredFromCornerRadius: options.preferredFromCornerRadius,
@@ -176,7 +179,7 @@ public struct MatchedGeometryPresentationLinkTransition: PresentationLinkTransit
             return presentationController.preferredDefaultAnimation() ?? context.transaction.animation
         }()
         let transition = MatchedGeometryPresentationControllerTransition(
-            sourceView: context.sourceView,
+            sourceView: options.sourceViewProvider?() ?? context.sourceView,
             prefersScaleEffect: options.prefersScaleEffect,
             prefersZoomEffect: options.prefersZoomEffect,
             preferredFromCornerRadius: options.preferredFromCornerRadius,

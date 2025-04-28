@@ -299,10 +299,10 @@ private struct PresentationLinkAdapterBody<
                     context.coordinator.overrideTraitCollection = traits
                     adapter.viewController.modalPresentationStyle = .custom
 
-                case .zoom:
+                case .zoom(_, let sourceViewProvider):
                     if #available(iOS 18.0, *) {
                         adapter.viewController.preferredTransition = .zoom { [weak uiView] context in
-                            return uiView
+                            return sourceViewProvider?() ?? uiView
                         }
                         adapter.viewController.presentationController?.delegate = context.coordinator
                     } else {

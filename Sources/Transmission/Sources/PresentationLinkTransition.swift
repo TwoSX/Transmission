@@ -16,7 +16,7 @@ public struct PresentationLinkTransition: Sendable {
         case currentContext(Options)
         case fullscreen(Options)
         case popover(PopoverTransitionOptions)
-        case zoom(Options)
+        case zoom(Options, (() -> UIView?)?)
         case representable(Options, any PresentationLinkTransitionRepresentable)
 
         var options: Options {
@@ -30,7 +30,7 @@ public struct PresentationLinkTransition: Sendable {
             case .currentContext(let options),
                 .fullscreen(let options),
                 .representable(let options, _),
-                .zoom(let options):
+                .zoom(let options, _):
                 return options
             }
         }
@@ -54,7 +54,7 @@ public struct PresentationLinkTransition: Sendable {
 
     /// The zoom presentation style.
     @available(iOS 18.0, *)
-    public static let zoom = PresentationLinkTransition(value: .zoom(.init()))
+    public static let zoom = PresentationLinkTransition(value: .zoom(.init(), nil))
 
     /// The zoom presentation style if available, otherwise a backwards compatible variant of the matched geometry presentation style.
     public static var zoomIfAvailable: PresentationLinkTransition {
@@ -632,24 +632,27 @@ extension PresentationLinkTransition {
     /// The zoom presentation style.
     @available(iOS 18.0, *)
     public static func zoom(
-        options: Options
+        options: Options,
+        sourceViewProvider: (() -> UIView?)? = nil
     ) -> PresentationLinkTransition {
-        PresentationLinkTransition(value: .zoom(options))
+        PresentationLinkTransition(value: .zoom(options, sourceViewProvider))
     }
 
     /// The zoom presentation style if available, otherwise a backwards compatible variant of the matched geometry presentation style.
     public static func zoomIfAvailable(
-        options: Options
+        options: Options,
+        sourceViewProvider: (() -> UIView?)? = nil
     ) -> PresentationLinkTransition {
         if #available(iOS 18.0, *) {
-            return .zoom(options: options)
+            return .zoom(options: options, sourceViewProvider: sourceViewProvider)
         }
         return .matchedGeometry(
             .init(
                 prefersScaleEffect: true,
                 prefersZoomEffect: true,
                 initialOpacity: 0,
-                preferredPresentationShadow: options.preferredPresentationBackgroundColor == .clear ? .clear : .prominent
+                preferredPresentationShadow: options.preferredPresentationBackgroundColor == .clear ? .clear : .prominent,
+                sourceViewProvider: sourceViewProvider
             ),
             options: options
         )
@@ -658,10 +661,11 @@ extension PresentationLinkTransition {
     /// The zoom presentation style if available, otherwise a fallback transition style.
     public static func zoomIfAvailable(
         options: Options,
-        otherwise fallback: PresentationLinkTransition
+        otherwise fallback: PresentationLinkTransition,
+        sourceViewProvider: (() -> UIView?)? = nil
     ) -> PresentationLinkTransition {
         if #available(iOS 18.0, *) {
-            return .zoom(options: options)
+            return .zoom(options: options, sourceViewProvider: sourceViewProvider)
         }
         return fallback
     }

@@ -298,6 +298,16 @@ struct ContentView: View {
                         Text("Zoom Transitions")
                     }
                 }
+                
+                if #available(iOS 17.0, *) {
+                    Section {
+                        NavigationLink("Hero Demo") {
+                            HeroDemoView()
+                        }
+                    } header: {
+                        Text("Hero")
+                    }
+                }
 
                 Section {
                     PresentationLink(
