@@ -76,6 +76,9 @@ public struct PresentationLinkTransition: Sendable {
 
 @available(iOS 14.0, *)
 extension PresentationLinkTransition {
+
+    public typealias Shadow = ShadowOptions
+
     /// The transition options.
     @frozen
     public struct Options: Sendable {
@@ -108,48 +111,6 @@ extension PresentationLinkTransition {
 
         var preferredPresentationBackgroundUIColor: UIColor? {
             preferredPresentationBackgroundColor?.toUIColor()
-        }
-    }
-
-    public struct Shadow: Equatable, Sendable {
-        public var shadowOpacity: Float
-        public var shadowRadius: CGFloat
-        public var shadowOffset: CGSize
-        public var shadowColor: Color
-
-        public init(
-            shadowOpacity: Float,
-            shadowRadius: CGFloat,
-            shadowOffset: CGSize = CGSize(width: 0, height: -3),
-            shadowColor: Color = Color.black
-        ) {
-            self.shadowOpacity = shadowOpacity
-            self.shadowRadius = shadowRadius
-            self.shadowOffset = shadowOffset
-            self.shadowColor = shadowColor
-        }
-
-        public static let prominent = Shadow(
-            shadowOpacity: 0.4,
-            shadowRadius: 40
-        )
-
-        public static let minimal = Shadow(
-            shadowOpacity: 0.15,
-            shadowRadius: 24
-        )
-
-        public static let clear = Shadow(
-            shadowOpacity: 0,
-            shadowRadius: 0,
-            shadowColor: .clear
-        )
-
-        func apply(to view: UIView, progress: Double = 1) {
-            view.layer.shadowOpacity = shadowOpacity * Float(progress)
-            view.layer.shadowRadius = shadowRadius
-            view.layer.shadowOffset = shadowOffset
-            view.layer.shadowColor = shadowColor.toCGColor()
         }
     }
 }
@@ -202,8 +163,17 @@ extension PresentationLinkTransition {
                             break
                         }
                     }
+                    if #available(iOS 18.0, *), self == .fullScreen {
+                        return false
+                    }
                     return true
                 }
+
+                @available(iOS 18.0, *)
+                @available(macOS, unavailable)
+                @available(tvOS, unavailable)
+                @available(watchOS, unavailable)
+                public static let fullScreen = Identifier("com.apple.UIKit.full")
 
                 @available(iOS 15.0, *)
                 @available(macOS, unavailable)
@@ -266,12 +236,31 @@ extension PresentationLinkTransition {
                 return true
             }
 
+            /// Creates a full screen detent.
+            @available(iOS 18.0, *)
+            @available(macOS, unavailable)
+            @available(tvOS, unavailable)
+            @available(watchOS, unavailable)
+            public static let fullScreen = Detent(identifier: .fullScreen)
+
             /// Creates a large detent.
             @available(iOS 15.0, *)
             @available(macOS, unavailable)
             @available(tvOS, unavailable)
             @available(watchOS, unavailable)
             public static let large = Detent(identifier: .large)
+
+            /// Creates a full screen detent if preferred and available, otherwise the large detent.
+            @available(iOS 15.0, *)
+            @available(macOS, unavailable)
+            @available(tvOS, unavailable)
+            @available(watchOS, unavailable)
+            public static func large(prefersFullScreen: Bool = false) -> Detent {
+                if prefersFullScreen, #available(iOS 18.0, *) {
+                    return .fullScreen
+                }
+                return .large
+            }
 
             /// Creates a medium detent.
             @available(iOS 15.0, *)
@@ -360,6 +349,9 @@ extension PresentationLinkTransition {
                 case .medium:
                     return .medium()
                 default:
+                    if #available(iOS 18.0, *), self == .fullScreen {
+                        return .fullScreen() ?? .large()
+                    }
                     let idealResolution: (UIPresentationController) -> CGFloat = { presentationController in
                         guard let containerView = presentationController.containerView else {
                             let idealHeight = presentationController.presentedViewController.view.intrinsicContentSize.height.rounded(.up)
@@ -475,6 +467,7 @@ extension PresentationLinkTransition {
         public var prefersScrollingExpandsWhenScrolledToEdge: Bool
         public var prefersEdgeAttachedInCompactHeight: Bool
         public var widthFollowsPreferredContentSizeWhenEdgeAttached: Bool
+        public var prefersPageSizing: Bool
 
         public init(
             selected: Binding<SheetTransitionOptions.Detent.Identifier?>? = nil,
@@ -487,6 +480,7 @@ extension PresentationLinkTransition {
             prefersScrollingExpandsWhenScrolledToEdge: Bool = true,
             prefersEdgeAttachedInCompactHeight: Bool = false,
             widthFollowsPreferredContentSizeWhenEdgeAttached: Bool = false,
+            prefersPageSizing: Bool = false,
             options: Options = .init()
         ) {
             self.options = options
@@ -506,6 +500,7 @@ extension PresentationLinkTransition {
             self.prefersScrollingExpandsWhenScrolledToEdge = prefersScrollingExpandsWhenScrolledToEdge
             self.prefersEdgeAttachedInCompactHeight = prefersEdgeAttachedInCompactHeight
             self.widthFollowsPreferredContentSizeWhenEdgeAttached = widthFollowsPreferredContentSizeWhenEdgeAttached
+            self.prefersPageSizing = prefersPageSizing
         }
     }
 

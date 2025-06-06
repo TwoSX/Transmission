@@ -128,10 +128,10 @@ public struct PresentationLinkAsymmetricTransition<
             forDismissed: dismissed,
             context: context
         )
-        if PresentingAnimationController.self == MatchedGeometryPresentationLinkTransition.self,
-           DismissingAnimationController.self != MatchedGeometryPresentationLinkTransition.self
+        if UIPresentingAnimationControllerType.self == MatchedGeometryPresentationControllerTransition.self,
+           UIDismissingAnimationControllerType.self != MatchedGeometryPresentationControllerTransition.self
         {
-            context.sourceView.alpha = 1
+            context.sourceView?.alpha = 1
         }
         return animationController
     }

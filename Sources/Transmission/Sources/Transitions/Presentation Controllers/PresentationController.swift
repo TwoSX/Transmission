@@ -11,7 +11,12 @@ import UIKit
 open class PresentationController: UIPresentationController {
 
     public private(set) var isTransitioningSize = false
-    public private(set) var keyboardHeight: CGFloat = 0
+    public private(set) var keyboardHeight: CGFloat = 0 {
+        didSet {
+            guard keyboardHeight != oldValue else { return }
+            keyboardHeightDidChange()
+        }
+    }
 
     public let dimmingView: UIView = {
         let view = UIView()
@@ -44,7 +49,7 @@ open class PresentationController: UIPresentationController {
         }
     }
 
-    public var presentedViewShadow: PresentationLinkTransition.Shadow = .clear {
+    public var presentedViewShadow: ShadowOptions = .clear {
         didSet {
             guard presentedViewController.isBeingPresented, presentedViewController.isBeingDismissed else { return }
             updateShadow(progress: 1)
@@ -81,6 +86,7 @@ open class PresentationController: UIPresentationController {
         shouldIgnoreContainerViewTouches = true
 
         containerView?.addSubview(dimmingView)
+        dimmingView.frame = containerView?.bounds ?? .zero
         dimmingView.addGestureRecognizer(
             UITapGestureRecognizer(target: self, action: #selector(didSelectBackground))
         )
@@ -170,7 +176,7 @@ open class PresentationController: UIPresentationController {
             shadowView.isHidden = true
         } else {
             shadowView.isHidden = false
-            presentedViewShadow.apply(to: shadowView, progress: progress)
+            presentedViewShadow.apply(to: shadowView.layer, progress: progress)
         }
     }
 
@@ -228,6 +234,9 @@ open class PresentationController: UIPresentationController {
             cornerHeight: sourceView.layer.cornerRadius,
             transform: nil
         )
+    }
+
+    open func keyboardHeightDidChange() {
     }
 
     open func keyboardOverlapInContainerView(

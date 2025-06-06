@@ -69,7 +69,7 @@ struct HeroDemoView: View {
                     options: .init(preferredPresentationBackgroundColor: .black),
                     otherwise: .matchedGeometry(
                         .init(
-                            preferredFromCornerRadius: 10,
+                            preferredFromCornerRadius: .rounded(cornerRadius: 10, style: .continuous),
                             prefersScaleEffect: false,
                             prefersZoomEffect: true,
                             initialOpacity: 0,

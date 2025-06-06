@@ -9,8 +9,9 @@ import EngineCore
 
 /// The context for a ``PresentationLinkTransitionRepresentable``
 @available(iOS 14.0, *)
+@frozen
 public struct PresentationLinkTransitionRepresentableContext {
-    public var sourceView: UIView
+    public weak var sourceView: UIView?
     public var options: PresentationLinkTransition.Options
     public var environment: EnvironmentValues
     public var transaction: Transaction
@@ -50,7 +51,7 @@ public protocol PresentationLinkTransitionRepresentable:
 
 @available(iOS 14.0, *)
 @MainActor @preconcurrency
-public protocol PresentationLinkPresentedTransitionRepresentable {
+public protocol PresentationLinkPresentedTransitionRepresentable: Sendable {
 
     typealias Context = PresentationLinkTransitionRepresentableContext
     associatedtype UIPresentationControllerType: UIPresentationController
@@ -115,10 +116,9 @@ extension PresentationLinkPresentedTransitionRepresentable where Self == Present
     public static var `default`: PresentationLinkDefaultPresentedTransition { .init() }
 }
 
-
 @available(iOS 14.0, *)
 @MainActor @preconcurrency
-public protocol PresentationLinkPresentingTransitionRepresentable {
+public protocol PresentationLinkPresentingTransitionRepresentable: Sendable {
 
     typealias Context = PresentationLinkTransitionRepresentableContext
     associatedtype UIPresentingAnimationControllerType: UIViewControllerAnimatedTransitioning
@@ -187,7 +187,7 @@ extension PresentationLinkPresentingTransitionRepresentable where Self == Presen
 
 @available(iOS 14.0, *)
 @MainActor @preconcurrency
-public protocol PresentationLinkDismissingTransitionRepresentable {
+public protocol PresentationLinkDismissingTransitionRepresentable: Sendable {
 
     typealias Context = PresentationLinkTransitionRepresentableContext
     associatedtype UIDismissingAnimationControllerType: UIViewControllerAnimatedTransitioning
